@@ -14,7 +14,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	public Graphics g;
 	Thread runner;
-	public static int SLEEP_TIME = 30; //change it to 1 when testing in real device
+	public static int SLEEP_TIME = 40; //change it to 1 when testing in real device
+	public final int FRAMES_PER_SECOND = 25;
+    public final int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
 	
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
@@ -89,7 +91,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			draw();
 			flushGraphics();
 			try{
-				
 				Thread.sleep(SLEEP_TIME);
 			}
 			catch (InterruptedException e){

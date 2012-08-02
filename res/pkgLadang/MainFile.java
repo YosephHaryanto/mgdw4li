@@ -15,7 +15,6 @@ public class MainFile extends MIDlet {
 		destroyApp(false);
 		notifyDestroyed();
 		//
-
 	}
 
 	protected void pauseApp() {
