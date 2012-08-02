@@ -7,17 +7,17 @@ import javax.microedition.lcdui.Image;
 public class MainChar{
 	
 	//private GameCanvas gc;
-	public int[] seqDown = new int[] {0,0,0,1,1,1,2,2,2};
-	public int[] seqLeft = new int[] {3,3,3,4,4,4,5,5,5};
-	public int[] seqRight = new int[] {6,6,6,7,7,7,8,8,8};
-	public int[] seqUp = new int[] {9,9,9,10,10,10,11,11,11};
+	public int[] seqDown = new int[] {0,0,0,0,1,1,1,1,2,2,2,2};
+	public int[] seqLeft = new int[] {3,3,3,3,4,4,4,4,5,5,5,5};
+	public int[] seqRight = new int[] {6,6,6,6,7,7,7,7,8,8,8,8};
+	public int[] seqUp = new int[] {9,9,9,9,10,10,10,10,11,11,11,11};
 	public String uri;
 	public Image img;
 	public Sprite spr;
 	public int x,y;
 	public int height = 300, width = 240;
 	boolean lastDown, lastRight, lastLeft, lastUp = false;
-	public int speed = 3;
+	public int speed = 1;
 	
 	public MainChar(String newUri){
         this.uri= newUri;

@@ -1,11 +1,7 @@
 package pkgLadang;
 
-import java.io.IOException;
-
 import javax.microedition.lcdui.game.GameCanvas;
-import javax.microedition.lcdui.game.Sprite;
 import javax.microedition.lcdui.Graphics;
-import javax.microedition.lcdui.Image;
 import javax.microedition.midlet.MIDlet;
 
 public class CvsMain extends GameCanvas implements Runnable {
@@ -16,11 +12,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 	Thread runner;
 	public final int FRAMES_PER_SECOND = 25; //ganti ini untuk ubah FPSnya
     public final int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
-    
-	long start = System.currentTimeMillis();
-	int sleep_time = 0;
-	long nextGameTick = getTickCount();
-	
+    public final int MAX_FRAME_SKIPS = 5;
+    int behind;
+
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
 	boolean enLaunched = false;
@@ -31,6 +25,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 	final int SCREEN_IN_GAME = 2;
 	
 	int currMainMenu = 0;
+	int sleepTime;
 	
 	
 	//Character
@@ -39,40 +34,16 @@ public class CvsMain extends GameCanvas implements Runnable {
 	//Enemy (1 wave)
 	//Enemy w1s1 = new Enemy("/img/sprite/enWorm.png", "Worm", 1, 2);
 	
-	Enemy foeUp[] = new Enemy[10];
+	Enemy foeUp[] = new Enemy[100];
 	Enemy foeLeft[] = new Enemy[10];
 	Enemy foeDown[] = new Enemy[10];
 	Enemy foeRight[] = new Enemy[10];
 	
-	
 	//Background
 	Background bg = new Background();
-
-	//for map generation
-	Image land,landCorner,landSide,landGreen,landWet;
 	
-	Image tomato;
-
-	/*code for map
-	First Digit         Second Digit (rotation clockwise)
-	0 : land			0 : no rotation
-	1 : land corner		1 : 90
-	2 : land side		2 : 180
-	3 : green			3 : 270
-	4 : land wet
-	*/
-	int [][] mapCode =  {
-					{30,30,30,30},
-					{10,21,21,11},
-					{20,0,0,22},
-					{20,0,0,22},
-					{13,23,23,12},
-					{10,21,21,11},
-					{20,40,40,22},
-					{20,40,40,22},
-					{13,23,23,12},
-					{30,30,30,30}};
-	
+	//Farm Field
+	FarmField farm = new FarmField();
 	
 	protected CvsMain(MIDlet m){
 		super(false);
@@ -82,39 +53,51 @@ public class CvsMain extends GameCanvas implements Runnable {
 		midlet = m;
 	}
 	
-	public long getTickCount(){
-		return System.currentTimeMillis() -  start;
-	}
-	
 	public void mulai(){
 		runner.start();
 	}
+	
 	public void run() {
-		System.out.println(getTickCount());
+		
+		long beginTime;     // the time when the cycle begun
+	    long timeDiff;      // the time it took for the cycle to execute
+	    // ms to sleep (<0 if we're behind)
+		int framesSkipped;  // number of frames being skipped
+				
 		init();
-		initMap();
+		behind = 0;
 		while(!gameOver){
+			beginTime = System.currentTimeMillis();
+			framesSkipped = 0;
 			clearScreen();
-			getInput();
-			updateEn();
+			update();
 			draw();
-			flushGraphics();
 			
-			nextGameTick += SKIP_TICKS;
-			sleep_time = (int) (nextGameTick - getTickCount());
-			try{
-				if(sleep_time >= 0){
-					Thread.sleep(sleep_time);
-				}
-				else {
-					System.out.println("shit");
-					System.out.println(sleep_time);
+			
+			timeDiff = System.currentTimeMillis() - beginTime;
+			sleepTime = (int) (SKIP_TICKS - timeDiff);
+			
+				//Kalo total waktu update+draw dibawah 40ms, OK. 
+				if(sleepTime > 0){
+					try{
+						Thread.sleep(sleepTime);
+					}
+					catch (InterruptedException e){
+						e.printStackTrace();
+					}
 				}
 				
-			}
-			catch (InterruptedException e){
-				e.printStackTrace();
-			}
+				//Kalo total waktu update+draw diatas 40ms (telat), update game tanpa
+				//draw
+				
+				while(sleepTime < 0 && framesSkipped < MAX_FRAME_SKIPS){
+					update();
+					sleepTime += SKIP_TICKS;
+					framesSkipped++;
+					behind++;
+					System.out.println("Shit, we are behind! " + behind++);
+				}
+			flushGraphics();
 		}
 	}
 	
@@ -124,10 +107,16 @@ public class CvsMain extends GameCanvas implements Runnable {
 		
 		bg.initAll();
 		joko.initChar();
+		farm.init();
 		
 		//Enemy initialization
 		initEnemy("UP");
 		System.out.println("Loaded");
+	}
+	
+	private void update(){
+		getInput();
+		updateEn();
 	}
 	
 	private void updateEn(){
@@ -143,28 +132,14 @@ public class CvsMain extends GameCanvas implements Runnable {
 						resetEnemy();
 						enLaunched = true;
 					}
-					
 				}
 			}
-		}
-	}
-		
-	private void initMap(){
-		try {
-			land = Image.createImage("/img/tile/land.png");
-			landSide = Image.createImage("/img/tile/land side.png");
-			landGreen = Image.createImage("/img/tile/green.png");
-			landCorner = Image.createImage("/img/tile/land corner.png");
-			landWet = Image.createImage("/img/tile/land wet.png");
-			tomato = Image.createImage("/img/tile/tomato.png");
-		}catch (IOException e){
-			e.printStackTrace();
 		}
 	}
 	
 	private void initEnemy(String which){
 		for(int i = 0; i < foeUp.length; i++){
-			foeUp[i] = new Enemy("/img/sprite/enWorm.png","Worm",(i+1),3);
+			foeUp[i] = new Enemy("/img/sprite/enWorm.png","Worm",(i+1),1);
 			foeUp[i].initChar();
 		}
 	}
@@ -304,11 +279,15 @@ public class CvsMain extends GameCanvas implements Runnable {
 			bg.drawMainMenu(g, currMainMenu);
 			break;
 		case SCREEN_IN_GAME:
-			drawMap();
+			farm.drawMap(g);
 			draw(joko);
 			for(int i = 0; i < foeUp.length; i++){
 				draw(foeUp[i]);
 			}
+			try{
+				g.drawString("FPS :" + (int) (1000/sleepTime), 100,0, Graphics.TOP | Graphics.LEFT);
+			}
+			catch(Exception exception){};
 			break;
 		}
 	}
@@ -316,49 +295,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void clearScreen(){
 		g.setColor(0xc3c3c3);
 		g.fillRect(0,0,getWidth(),getHeight());
-	}
-		
-	private void drawMap(){
-		Image tempImg = null;
-		int rot = 0;
-		for ( int i = 0; i < 10;i++){
-			for ( int j = 0; j < 4;j++){
-				switch (mapCode[i][j] /10){
-				case 0:
-					tempImg = land;
-					break;
-				case 1:
-					tempImg = landCorner;
-					break;
-				case 2:
-					tempImg = landSide;
-					break;
-				case 3:
-					tempImg = landGreen;
-					break;
-				case 4:
-					tempImg = landWet;
-					break;
-				}
-				switch (mapCode[i][j] % 10){
-				case 0:
-					rot = Sprite.TRANS_NONE;
-					break;
-				case 1:
-					rot = Sprite.TRANS_ROT90;
-					break;
-				case 2:
-					rot = Sprite.TRANS_ROT180;
-					break;
-				case 3:
-					rot = Sprite.TRANS_ROT270;
-					break;
-				}
-				g.drawRegion(tempImg, 0, 0, tempImg.getWidth() , tempImg.getHeight(), rot, j*32, i*32, 0);
-				g.drawRegion(tempImg, 0, 0, tempImg.getWidth() , tempImg.getHeight(), rot, j*32 + 4*32, i*32, 0);
-			}
-		}
-		g.drawImage(tomato, 64, 64, 0);
 	}
 	
 	private void draw(MainChar chars){
