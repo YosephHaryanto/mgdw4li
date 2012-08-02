@@ -45,6 +45,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 	//Farm Field
 	FarmField farm = new FarmField();
 	
+	//8 Crop in Field
+	Crop [] crop = new Crop[16];
+	
 	protected CvsMain(MIDlet m){
 		super(false);
 		this.setFullScreenMode(true);
@@ -108,6 +111,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 		bg.initAll();
 		farm.init();
 		joko.initChar();
+		initCrop();
 
 		//Enemy initialization
 		initEnemy("UP");
@@ -144,13 +148,18 @@ public class CvsMain extends GameCanvas implements Runnable {
 		}
 	}
 	
+	private void initCrop(){
+		for(int i = 0; i < crop.length; i++){
+			crop[i] = new Crop("tomato");
+		}
+	}
+	
 	private void resetEnemy(){
 		for(int i = 0; i < foeUp.length; i++){
 			foeUp[i].x = getWidth()/2;
 			foeUp[i].y = -1 * foeUp[i].position * (foeUp[i].spr.getHeight());
 			foeUp[i].spr.setFrame(0); 
 		}
-		
 	}
 	
 	private void getInput(){
@@ -203,7 +212,13 @@ public class CvsMain extends GameCanvas implements Runnable {
 			boolean idle = true;
 			if(keyState == FIRE_PRESSED){
 				if(!fireButtonHold){
-										
+					int posi = joko.determinePos();
+					if(posi != 99){
+						//crop[posi].init();
+						crop[posi-1] = new Crop("tomato");
+						crop[posi-1].plant(2,posi);
+						crop[posi-1].active = 1;
+					}
 					fireButtonHold = true;
 				}
 			}
@@ -280,10 +295,13 @@ public class CvsMain extends GameCanvas implements Runnable {
 			break;
 		case SCREEN_IN_GAME:
 			farm.drawMap(g);
-			draw(joko);
 			for(int i = 0; i < foeUp.length; i++){
 				draw(foeUp[i]);
 			}
+			draw(crop);
+			draw(joko);
+			g.drawString(""+joko.x, 100, 0, Graphics.TOP | Graphics.LEFT);
+			g.drawString(""+joko.y, 200, 0, Graphics.TOP | Graphics.LEFT);
 			break;
 		}
 	}
@@ -301,5 +319,12 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void draw(Enemy ens){
 		ens.spr.setPosition(ens.x, ens.y);
 		ens.spr.paint(g);
+	}
+	
+	private void draw(Crop [] crop){
+		for(int i = 0; i < crop.length; i++){
+			if(crop[i].active == 1)
+				g.drawImage(crop[i].current, crop[i].x, crop[i].y, 0);
+		}
 	}
 }

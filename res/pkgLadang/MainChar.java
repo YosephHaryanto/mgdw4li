@@ -15,7 +15,7 @@ public class MainChar{
 	public Image img;
 	public Sprite spr;
 	public int x,y;
-	public int height = 300, width = 240;
+	public int height = 320, width = 240;
 	boolean lastDown, lastRight, lastLeft, lastUp = false;
 	public int speed = 2;
 	
@@ -34,8 +34,8 @@ public class MainChar{
 			e.printStackTrace();
 		}
 		
-		this.x = width/2;
-		this.y = height/2;
+		this.x = (width/2) - (this.spr.getWidth()/2);
+		this.y = (height/2) - (this.spr.getHeight());
 		this.spr.setFrame(0); 
 	}
 	
@@ -103,5 +103,24 @@ public class MainChar{
 		lastRight = false;
 		lastLeft = false;
 		lastUp = false;
+	}
+	
+	public int determinePos(){
+		
+		int pos = 99;
+		String posNow = "";
+		int [] finalPos = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+		int [] coordPos = {12,22,13,23,52,62,53,63,16,26,17,27,56,66,57,67};
+		
+		posNow += String.valueOf(this.x/32);
+		posNow += String.valueOf(this.y/32);
+		System.out.println(posNow);
+		for(int i = 1; i < 17; i++){
+			if(Integer.parseInt(posNow) == coordPos[i-1]){
+				pos = finalPos[i-1];
+			}
+		}	
+		System.out.println(pos);
+		return pos;
 	}
 }

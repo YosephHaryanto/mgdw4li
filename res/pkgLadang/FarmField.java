@@ -4,13 +4,14 @@ import java.io.IOException;
 
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+import javax.microedition.lcdui.game.LayerManager;
 import javax.microedition.lcdui.game.Sprite;
 
 public class FarmField{
 	
 	Image land,landCorner,landSide,landGreen,landWet;
-	
-	Image tomato;
+	Image tomato, cabbage;
+	LayerManager manager = new LayerManager();
 	
 	/*code for map
 	First Digit         Second Digit (rotation clockwise)
@@ -34,16 +35,17 @@ public class FarmField{
 //			{30,30,30,30}};
 	
 	int [][] mapCode =  {
-	{30,30,30,30},
-	{10,21,21,11},
-	{20,0,0,22},
-	{20,0,0,22},
-	{13,23,23,12},
-	{10,21,21,11},
-	{20,40,40,22},
-	{20,40,40,22},
-	{13,23,23,12},
-	{30,30,30,30}};
+						{30,30,30,30},
+						{10,21,21,11},
+						{20,00,00,22},
+						{20,00,00,22},
+						{13,23,23,12},
+						{10,21,21,11},
+						{20,00,00,22},
+						{20,00,00,22},
+						{13,23,23,12},
+						{30,30,30,30}
+						};
 	
 	public void init(){
 		try {
@@ -52,7 +54,7 @@ public class FarmField{
 			landGreen = Image.createImage("/img/tile/green.png");
 			landCorner = Image.createImage("/img/tile/land corner.png");
 			landWet = Image.createImage("/img/tile/land wet.png");
-			tomato = Image.createImage("/img/tile/tomato.png");
+			
 		}catch (IOException e){
 			e.printStackTrace();
 		}
@@ -98,6 +100,7 @@ public class FarmField{
 				g.drawRegion(tempImg, 0, 0, tempImg.getWidth() , tempImg.getHeight(), rot, j*32 + 4*32, i*32, 0);
 			}
 		}
-		g.drawImage(tomato, 64, 64, 0);
+		//g.drawImage(tomato, 64, 64, 0);
+		//g.drawImage(cabbage, 32, 64, 0);
 	}
 }
