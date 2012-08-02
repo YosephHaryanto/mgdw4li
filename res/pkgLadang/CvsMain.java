@@ -14,7 +14,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	public Graphics g;
 	Thread runner;
-	public static int SLEEP_TIME =1; //change it to 1 when testing in real device
+	public static int SLEEP_TIME = 30; //change it to 1 when testing in real device
 	
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
