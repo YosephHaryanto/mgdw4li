@@ -205,7 +205,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 			break;
 			
 		case SCREEN_IN_GAME:
-			
+			boolean idle = true;
 			if(keyState == FIRE_PRESSED){
 				if(!fireButtonHold){
 										
@@ -220,6 +220,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == DOWN_PRESSED){
 				if(!downButtonHold){
 					joko.move(0);
+					idle = false;
 				}
 			} else {
 				downButtonHold = false;
@@ -228,6 +229,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == LEFT_PRESSED){
 				if(!leftButtonHold){
 					joko.move(1);
+					idle = false;
 				}
 			} else {
 				leftButtonHold = false;
@@ -236,6 +238,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == UP_PRESSED){
 				if(!upButtonHold){
 					joko.move(2);
+					idle = false;
 				}
 			} else {
 				upButtonHold = false;
@@ -244,10 +247,13 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == RIGHT_PRESSED){
 				if(!rightButtonHold){
 					joko.move(3);
+					idle = false;
 				}
 			} else {
 				rightButtonHold = false;
 			}
+			if (idle)
+				joko.move(4);
 			break;
 		}
 	}
