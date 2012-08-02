@@ -17,7 +17,7 @@ public class MainChar{
 	public int x,y;
 	public int height = 300, width = 240;
 	boolean lastDown, lastRight, lastLeft, lastUp = false;
-	public int speed = 1;
+	public int speed = 2;
 	
 	public MainChar(String newUri){
         this.uri= newUri;

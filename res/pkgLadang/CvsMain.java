@@ -34,7 +34,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 	//Enemy (1 wave)
 	//Enemy w1s1 = new Enemy("/img/sprite/enWorm.png", "Worm", 1, 2);
 	
-	Enemy foeUp[] = new Enemy[100];
+	Enemy foeUp[] = new Enemy[50];
 	Enemy foeLeft[] = new Enemy[10];
 	Enemy foeDown[] = new Enemy[10];
 	Enemy foeRight[] = new Enemy[10];
@@ -61,7 +61,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 		
 		long beginTime;     // the time when the cycle begun
 	    long timeDiff;      // the time it took for the cycle to execute
-	    // ms to sleep (<0 if we're behind)
+	    					// ms to sleep (<0 if we're behind)
 		int framesSkipped;  // number of frames being skipped
 				
 		init();
@@ -106,9 +106,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 		screenState = SCREEN_SPLASH;
 		
 		bg.initAll();
-		joko.initChar();
 		farm.init();
-		
+		joko.initChar();
+
 		//Enemy initialization
 		initEnemy("UP");
 		System.out.println("Loaded");
@@ -284,10 +284,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			for(int i = 0; i < foeUp.length; i++){
 				draw(foeUp[i]);
 			}
-			try{
-				g.drawString("FPS :" + (int) (1000/sleepTime), 100,0, Graphics.TOP | Graphics.LEFT);
-			}
-			catch(Exception exception){};
 			break;
 		}
 	}
