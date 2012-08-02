@@ -14,6 +14,7 @@ public class MainFile extends MIDlet {
 	protected void destroyApp(boolean arg0) throws MIDletStateChangeException {
 		destroyApp(false);
 		notifyDestroyed();
+		//
 
 	}
 
