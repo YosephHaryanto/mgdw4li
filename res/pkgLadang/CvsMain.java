@@ -8,6 +8,8 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.midlet.MIDlet;
 
+//TEST FADLI
+
 public class CvsMain extends GameCanvas implements Runnable {
 	
 	private MIDlet midlet;
