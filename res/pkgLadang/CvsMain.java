@@ -14,9 +14,12 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	public Graphics g;
 	Thread runner;
-	public static int SLEEP_TIME = 40; //change it to 1 when testing in real device
-	public final int FRAMES_PER_SECOND = 25;
+	public final int FRAMES_PER_SECOND = 25; //ganti ini untuk ubah FPSnya
     public final int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
+    
+	long start = System.currentTimeMillis();
+	int sleep_time = 0;
+	long nextGameTick = getTickCount();
 	
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
@@ -28,6 +31,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 	final int SCREEN_IN_GAME = 2;
 	
 	int currMainMenu = 0;
+	
 	
 	//Character
 	MainChar joko = new MainChar("/img/sprite/spriteboy2.png");
@@ -78,10 +82,15 @@ public class CvsMain extends GameCanvas implements Runnable {
 		midlet = m;
 	}
 	
+	public long getTickCount(){
+		return System.currentTimeMillis() -  start;
+	}
+	
 	public void mulai(){
 		runner.start();
 	}
 	public void run() {
+		System.out.println(getTickCount());
 		init();
 		initMap();
 		while(!gameOver){
@@ -90,8 +99,18 @@ public class CvsMain extends GameCanvas implements Runnable {
 			updateEn();
 			draw();
 			flushGraphics();
+			
+			nextGameTick += SKIP_TICKS;
+			sleep_time = (int) (nextGameTick - getTickCount());
 			try{
-				Thread.sleep(SLEEP_TIME);
+				if(sleep_time >= 0){
+					Thread.sleep(sleep_time);
+				}
+				else {
+					System.out.println("shit");
+					System.out.println(sleep_time);
+				}
+				
 			}
 			catch (InterruptedException e){
 				e.printStackTrace();
