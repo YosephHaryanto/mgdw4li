@@ -40,15 +40,17 @@ public class Enemy{
 		this.spr.setFrame(0); 
 	}
 	
-	public boolean move(boolean moving, boolean ready){
+	public void move(boolean moving, int direction){
 		if(moving){
 			this.y += this.speed;
 			this.spr.nextFrame();
 		}
-		
+	}
+	
+	public boolean isOut(boolean moving){
 		if(moving){
 			if(this.y > (height + this.spr.getHeight())){
-				return true;
+				return true; //object is out from the screen
 			}
 			else
 				return false;

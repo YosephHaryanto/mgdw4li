@@ -6,28 +6,38 @@ import javax.microedition.lcdui.game.GameCanvas;
 import javax.microedition.lcdui.game.Sprite;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+import javax.microedition.midlet.MIDlet;
 
 public class CvsMain extends GameCanvas implements Runnable {
 	
+	private MIDlet midlet;
+	
 	public Graphics g;
 	Thread runner;
-	public static int SLEEP_TIME = 30;
+	public static int SLEEP_TIME =1; //change it to 1 when testing in real device
 	
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
-	boolean enReady = true, enLaunched = false;
+	boolean enLaunched = false;
 	
 	int screenState;
 	final int SCREEN_SPLASH = 0;
 	final int SCREEN_MAIN_MENU = 1;
 	final int SCREEN_IN_GAME = 2;
 	
+	int currMainMenu = 0;
 	
 	//Character
 	MainChar joko = new MainChar("/img/sprite/spriteboy2.png");
 	
 	//Enemy (1 wave)
-	Enemy w1s1 = new Enemy("/img/sprite/enWorm.png", "Worm", 1, 2);
+	//Enemy w1s1 = new Enemy("/img/sprite/enWorm.png", "Worm", 1, 2);
+	
+	Enemy foeUp[] = new Enemy[10];
+	Enemy foeLeft[] = new Enemy[10];
+	Enemy foeDown[] = new Enemy[10];
+	Enemy foeRight[] = new Enemy[10];
+	
 	
 	//Background
 	Background bg = new Background();
@@ -58,11 +68,12 @@ public class CvsMain extends GameCanvas implements Runnable {
 					{30,30,30,30}};
 	
 	
-	protected CvsMain(){
+	protected CvsMain(MIDlet m){
 		super(false);
 		this.setFullScreenMode(true);
 		g = getGraphics();
 		runner = new Thread(this);
+		midlet = m;
 	}
 	
 	public void mulai(){
@@ -87,21 +98,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 		}
 	}
 	
-
-	private void updateEn(){
-		switch (screenState){
-		case (SCREEN_IN_GAME):
-			
-			if (joko.spr.collidesWith(w1s1.spr, true) == false) {
-				if (w1s1.move(enLaunched, enReady)) {
-					enReady = true;
-					enLaunched = false;
-				} else
-					enReady = false;
-			}
-		}
-	}
-	
 	private void init(){
 		gameOver = false;
 		screenState = SCREEN_SPLASH;
@@ -109,9 +105,28 @@ public class CvsMain extends GameCanvas implements Runnable {
 		bg.initAll();
 		joko.initChar();
 		
-		//Enemy
-		w1s1.initChar();
+		//Enemy initialization
+		initEnemy("UP");
 		System.out.println("Loaded");
+	}
+	
+	private void updateEn(){
+		switch (screenState){
+		case (SCREEN_IN_GAME):
+			
+			for (int i = 0; i < foeUp.length; i++) {
+				if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
+					
+					foeUp[i].move(enLaunched, 1);
+
+					if(foeUp[foeUp.length - 1].isOut(enLaunched)){
+						resetEnemy();
+						enLaunched = true;
+					}
+					
+				}
+			}
+		}
 	}
 		
 	private void initMap(){
@@ -125,6 +140,22 @@ public class CvsMain extends GameCanvas implements Runnable {
 		}catch (IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	private void initEnemy(String which){
+		for(int i = 0; i < foeUp.length; i++){
+			foeUp[i] = new Enemy("/img/sprite/enWorm.png","Worm",(i+1),3);
+			foeUp[i].initChar();
+		}
+	}
+	
+	private void resetEnemy(){
+		for(int i = 0; i < foeUp.length; i++){
+			foeUp[i].x = getWidth()/2;
+			foeUp[i].y = -1 * foeUp[i].position * (foeUp[i].spr.getHeight());
+			foeUp[i].spr.setFrame(0); 
+		}
+		
 	}
 	
 	private void getInput(){
@@ -145,23 +176,39 @@ public class CvsMain extends GameCanvas implements Runnable {
 		case SCREEN_MAIN_MENU:
 			if((keyState & FIRE_PRESSED)!= 0){
 				if(!fireButtonHold){
-					screenState = SCREEN_IN_GAME;
+					goToMenu(currMainMenu);
 					fireButtonHold = true;
 				}
 			}
 			else 
 				fireButtonHold = false;
+			
+			if(keyState == DOWN_PRESSED){
+				if(!downButtonHold){
+					currMainMenu++;
+					if(currMainMenu == 5)
+						currMainMenu = 0;
+					downButtonHold = true;
+				}
+			} else
+				downButtonHold = false;
+			
+			if(keyState == UP_PRESSED){
+				if(!upButtonHold){
+					currMainMenu--;
+					if(currMainMenu == -1)
+						currMainMenu = 4;
+					upButtonHold = true;
+				}
+			} else
+				upButtonHold = false;
 			break;
 			
 		case SCREEN_IN_GAME:
-			boolean idle = true;
+			
 			if(keyState == FIRE_PRESSED){
 				if(!fireButtonHold){
-					if(enReady){
-						w1s1.y = -1 * w1s1.spr.getHeight();
-						enLaunched = true;
-					}
-					
+										
 					fireButtonHold = true;
 				}
 			}
@@ -173,7 +220,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == DOWN_PRESSED){
 				if(!downButtonHold){
 					joko.move(0);
-					idle = false;
 				}
 			} else {
 				downButtonHold = false;
@@ -182,7 +228,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == LEFT_PRESSED){
 				if(!leftButtonHold){
 					joko.move(1);
-					idle = false;
 				}
 			} else {
 				leftButtonHold = false;
@@ -191,7 +236,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == UP_PRESSED){
 				if(!upButtonHold){
 					joko.move(2);
-					idle =false;
 				}
 			} else {
 				upButtonHold = false;
@@ -200,14 +244,27 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == RIGHT_PRESSED){
 				if(!rightButtonHold){
 					joko.move(3);
-					idle = false;
 				}
 			} else {
 				rightButtonHold = false;
 			}
-			if (idle)
-				joko.move(4);
 			break;
+		}
+	}
+	
+	private void goToMenu(int menu){
+		switch(menu){
+		case 0:
+			screenState = SCREEN_IN_GAME;
+		break;
+		case 1:
+			screenState = SCREEN_SPLASH;
+		break;
+		case 4:
+			midlet.notifyDestroyed();
+			break;
+		default:
+			screenState = SCREEN_MAIN_MENU;
 		}
 	}
 	
@@ -218,11 +275,14 @@ public class CvsMain extends GameCanvas implements Runnable {
 		case SCREEN_SPLASH:
 			break;
 		case SCREEN_MAIN_MENU:
+			bg.drawMainMenu(g, currMainMenu);
 			break;
 		case SCREEN_IN_GAME:
 			drawMap();
 			draw(joko);
-			draw(w1s1);
+			for(int i = 0; i < foeUp.length; i++){
+				draw(foeUp[i]);
+			}
 			break;
 		}
 	}

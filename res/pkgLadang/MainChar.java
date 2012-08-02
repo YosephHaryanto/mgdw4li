@@ -49,7 +49,7 @@ public class MainChar{
 		switch(direction){
 		case 0:
 			if((this.y + (this.spr.getHeight())) < height){
-				this.y += 2;
+				this.y += 3;
 			}
 			if(!lastDown){
 				this.spr.setFrameSequence(seqDown);
@@ -61,7 +61,7 @@ public class MainChar{
 			
 		case 1:
 			if(this.x > 0)
-				this.x -= 2;
+				this.x -= 3;
 			if(!lastLeft){
 				this.spr.setFrameSequence(seqLeft);
 				setFalseDirection();
@@ -72,7 +72,7 @@ public class MainChar{
 			
 		case 2:
 			if(this.y > 0)
-				this.y -= 2;
+				this.y -= 3;
 			if(!lastUp){
 				this.spr.setFrameSequence(seqUp);
 				setFalseDirection();
@@ -83,7 +83,7 @@ public class MainChar{
 			
 		case 3:
 			if(this.x + (this.spr.getWidth()) < width)
-				this.x += 2;
+				this.x += 3;
 			if(!lastRight){
 				this.spr.setFrameSequence(seqRight);
 				setFalseDirection();
@@ -91,9 +91,7 @@ public class MainChar{
 			}
 			this.spr.nextFrame();
 			break;
-		case 4:
-			spr.setFrame(4);
-			break;
+			
 		}
 	}
 	

@@ -8,11 +8,12 @@ public class MainFile extends MIDlet {
 
 	public CvsMain canvas;
 	public MainFile() {
-		canvas = new CvsMain();
+		canvas = new CvsMain(this);
 	}
 
 	protected void destroyApp(boolean arg0) throws MIDletStateChangeException {
-		// TODO Auto-generated method stub
+		destroyApp(false);
+		notifyDestroyed();
 
 	}
 
