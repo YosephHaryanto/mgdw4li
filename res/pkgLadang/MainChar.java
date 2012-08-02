@@ -91,7 +91,9 @@ public class MainChar{
 			}
 			this.spr.nextFrame();
 			break;
-			
+		case 4:
+			spr.setFrame(4);
+			break;
 		}
 	}
 	
