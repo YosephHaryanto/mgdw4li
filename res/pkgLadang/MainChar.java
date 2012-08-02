@@ -45,6 +45,8 @@ public class MainChar{
 		 * 2 = up
 		 * 3 = right
 		 */
+		 
+		 TESTIMG FADLI
 		
 		switch(direction){
 		case 0:
