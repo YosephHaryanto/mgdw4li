@@ -38,12 +38,14 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	//Character
 	MainChar joko = new MainChar("/img/sprite/spriteboy2.png");
-
+	
 	Enemy foeUp[] = new Enemy[10];
 	Enemy foeLeft[] = new Enemy[10];
 	Enemy foeDown[] = new Enemy[10];
 	Enemy foeRight[] = new Enemy[10];
 	
+	//Music Manager
+	MusicManager musicManager;
 	//Background
 	Background bg = new Background();
 	
@@ -131,7 +133,10 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void updateEn(){
 		switch (screenState){
 		case (SCREEN_IN_GAME):
-			
+			if (musicManager == null){
+				musicManager = new MusicManager();
+				musicManager.play();
+			}
 			for (int i = 0; i < foeUp.length; i++) {
 				if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
 					
