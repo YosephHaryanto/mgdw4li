@@ -23,6 +23,14 @@ public class CvsMain extends GameCanvas implements Runnable {
 	final int SCREEN_SPLASH = 0;
 	final int SCREEN_MAIN_MENU = 1;
 	final int SCREEN_IN_GAME = 2;
+	final int SCREEN_CHOOSE_ACTION = 3;
+	final int SCREEN_CHOOSE_CROP = 4;
+	
+	
+	final int ENEMY_UP = 1;
+	final int ENEMY_RIGHT = 2;
+	final int ENEMY_LEFT = 3;
+	final int ENEMY_BOTTOM = 4;
 	
 	int currMainMenu = 0;
 	int sleepTime;
@@ -30,11 +38,8 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	//Character
 	MainChar joko = new MainChar("/img/sprite/spriteboy2.png");
-	
-	//Enemy (1 wave)
-	//Enemy w1s1 = new Enemy("/img/sprite/enWorm.png", "Worm", 1, 2);
-	
-	Enemy foeUp[] = new Enemy[50];
+
+	Enemy foeUp[] = new Enemy[10];
 	Enemy foeLeft[] = new Enemy[10];
 	Enemy foeDown[] = new Enemy[10];
 	Enemy foeRight[] = new Enemy[10];
@@ -66,9 +71,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 	    long timeDiff;      // the time it took for the cycle to execute
 	    					// ms to sleep (<0 if we're behind)
 		int framesSkipped;  // number of frames being skipped
-				
-		init();
 		behind = 0;
+		
+		init();
 		while(!gameOver){
 			beginTime = System.currentTimeMillis();
 			framesSkipped = 0;
@@ -130,11 +135,15 @@ public class CvsMain extends GameCanvas implements Runnable {
 			for (int i = 0; i < foeUp.length; i++) {
 				if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
 					
-					foeUp[i].move(enLaunched, 1);
-
-					if(foeUp[foeUp.length - 1].isOut(enLaunched)){
-						resetEnemy();
-						enLaunched = true;
+					//the second parameter from .move() and .isOut is direction.
+					//1 : From UP, targeting field 3
+					//2 : From RIGHT, targeting field 1
+					//3 : From LEFT, targeting field 4
+					//4 : From BOTTOM, targeting field 2
+					
+					foeUp[i].move(ENEMY_UP);
+					if(foeUp[i].isOut(ENEMY_UP, crop)){
+						resetEnemy(foeUp[i]);
 					}
 				}
 			}
@@ -143,23 +152,23 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	private void initEnemy(String which){
 		for(int i = 0; i < foeUp.length; i++){
-			foeUp[i] = new Enemy("/img/sprite/enWorm.png","Worm",(i+1),1);
+			foeUp[i] = new Enemy("/img/sprite/enWorm.png","Worm",(i+1),2);
 			foeUp[i].initChar();
 		}
 	}
 	
 	private void initCrop(){
 		for(int i = 0; i < crop.length; i++){
-			crop[i] = new Crop("tomato");
+			crop[i] = new Crop();
 		}
 	}
 	
-	private void resetEnemy(){
-		for(int i = 0; i < foeUp.length; i++){
-			foeUp[i].x = getWidth()/2;
-			foeUp[i].y = -1 * foeUp[i].position * (foeUp[i].spr.getHeight());
-			foeUp[i].spr.setFrame(0); 
-		}
+	private void resetEnemy(Enemy en){
+			en.x = getWidth()/2;
+			en.y = -1 * en.position * (en.spr.getHeight());
+			en.moveDir("DOWN");
+			en.spr.setFrame(0);
+			en.moving = false;
 	}
 	
 	private void getInput(){
@@ -213,9 +222,8 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(keyState == FIRE_PRESSED){
 				if(!fireButtonHold){
 					int posi = joko.determinePos();
-					if(posi != 99){
-						//crop[posi].init();
-						crop[posi-1] = new Crop("tomato");
+					if((posi != 99) && (crop[posi-1].active == 0)){
+						crop[posi-1].setCrop("tomato");
 						crop[posi-1].plant(2,posi);
 						crop[posi-1].active = 1;
 					}
@@ -224,7 +232,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			}
 			else {
 				fireButtonHold = false;
-				//enLaunched = false;
 			}
 			
 			if(keyState == DOWN_PRESSED){
@@ -295,13 +302,19 @@ public class CvsMain extends GameCanvas implements Runnable {
 			break;
 		case SCREEN_IN_GAME:
 			farm.drawMap(g);
+			
+			//0 = load 1 field
+			//1 = load 2 field
+			//2 = load 3 field
+			//3 = load 4 field
+			farm.openField(3);
+			draw(crop);
+			
 			for(int i = 0; i < foeUp.length; i++){
 				draw(foeUp[i]);
 			}
-			draw(crop);
+
 			draw(joko);
-			g.drawString(""+joko.x, 100, 0, Graphics.TOP | Graphics.LEFT);
-			g.drawString(""+joko.y, 200, 0, Graphics.TOP | Graphics.LEFT);
 			break;
 		}
 	}
@@ -323,8 +336,12 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	private void draw(Crop [] crop){
 		for(int i = 0; i < crop.length; i++){
-			if(crop[i].active == 1)
+			if(crop[i].health <= 0)
+				crop[i] = new Crop();
+			
+			if(crop[i].active == 1){
 				g.drawImage(crop[i].current, crop[i].x, crop[i].y, 0);
+			}
 		}
 	}
 }

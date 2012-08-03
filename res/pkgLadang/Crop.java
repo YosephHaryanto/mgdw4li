@@ -12,35 +12,33 @@ public class Crop{
 	public int x, y;
 	public int active = 0;
 	public boolean first = true;
-	Image current, tomato, cabbage;
+	Image current, tomato, cabbage;	
 	
 	public void init(){
 		try {
 			tomato = Image.createImage("/img/tile/tomato.png");
 			cabbage = Image.createImage("/img/tile/cabbage.png");
-			System.out.println("Loaded 2");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 	}
 	
-	public Crop(String cropType){
-		if(this.first){
-			this.init();
-			this.first = false;
-		}
-		
-		if(cropType == "tomato"){
+	public void setCrop(String cropType){
+		if(cropType.equals("tomato")){
 			this.current = tomato;
 		}
-		else if (cropType == "cabbage"){
-			this.current = cabbage;
+		else if (cropType.equals("cabbage")){
+			this.current = cabbage;	
 		}
 	}
 	
 	public Crop(){
-		
+		if(this.first){
+			this.init();
+			this.health = 2;
+			this.first = false;
+		}
 	}
 	
 	public void plant(int state, int pos){
