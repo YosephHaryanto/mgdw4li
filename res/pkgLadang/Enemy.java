@@ -22,6 +22,7 @@ public class Enemy{
         this.uri= newUri;
         this.position = pos;
         this.speed = initSpeed;
+        this.type = type;
     }
 	
 	public void initChar(){
