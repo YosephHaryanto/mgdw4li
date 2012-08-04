@@ -122,6 +122,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 
 		//Enemy initialization
 		initEnemy("UP");
+		initEnemy("DOWN");
+		initEnemy("LEFT");
+		initEnemy("RIGHT");
 		System.out.println("Loaded");
 	}
 	
@@ -137,28 +140,59 @@ public class CvsMain extends GameCanvas implements Runnable {
 				musicManager = new MusicManager();
 				musicManager.play();
 			}
-			for (int i = 0; i < foeUp.length; i++) {
-				if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
-					
-					//the second parameter from .move() and .isOut is direction.
-					//1 : From UP, targeting field 3
-					//2 : From RIGHT, targeting field 1
-					//3 : From LEFT, targeting field 4
-					//4 : From BOTTOM, targeting field 2
-					
-					foeUp[i].move(ENEMY_UP);
-					if(foeUp[i].isOut(ENEMY_UP, crop)){
-						resetEnemy(foeUp[i]);
-					}
-				}
+		for (int i = 0; i < foeUp.length; i++) {
+			
+			if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
+				foeUp[i].move();
+				if(foeUp[i].isOut(crop))
+					resetEnemy(foeUp[i]);
 			}
+			
+			if(!joko.spr.collidesWith(foeDown[i].spr, true)){
+				foeDown[i].move();
+				if(foeDown[i].isOut(crop))
+					resetEnemy(foeDown[i]);
+			}
+			
+			if(!joko.spr.collidesWith(foeLeft[i].spr, true)){
+				foeLeft[i].move();
+				if(foeLeft[i].isOut(crop))
+					resetEnemy(foeLeft[i]);
+			}
+			
+			if(!joko.spr.collidesWith(foeRight[i].spr, true)){
+				foeRight[i].move();
+				if(foeRight[i].isOut(crop))
+					resetEnemy(foeRight[i]);
+			}
+		}
 		}
 	}
 	
 	private void initEnemy(String which){
-		for(int i = 0; i < foeUp.length; i++){
-			foeUp[i] = new Enemy("/img/sprite/enWorm.png","Worm",(i+1),2);
-			foeUp[i].initChar();
+		if (which.equals("UP")) {
+			for (int i = 0; i < foeUp.length; i++) {
+				foeUp[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeUp[i].initChar();
+			}
+		}
+		else if(which.equals("DOWN")){
+			for (int i = 0; i < foeDown.length; i++) {
+				foeDown[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeDown[i].initChar();
+			}
+		}
+		else if(which.equals("LEFT")){
+			for (int i = 0; i < foeLeft.length; i++) {
+				foeLeft[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeLeft[i].initChar();
+			}
+		}
+		else if(which.equals("RIGHT")){
+			for (int i = 0; i < foeRight.length; i++) {
+				foeRight[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeRight[i].initChar();
+			}
 		}
 	}
 	
@@ -169,9 +203,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 	}
 	
 	private void resetEnemy(Enemy en){
-			en.x = getWidth()/2;
-			en.y = -1 * en.position * (en.spr.getHeight());
-			en.moveDir("DOWN");
+			en.setinitPos();
 			en.spr.setFrame(0);
 			en.moving = false;
 	}
@@ -317,8 +349,10 @@ public class CvsMain extends GameCanvas implements Runnable {
 			
 			for(int i = 0; i < foeUp.length; i++){
 				draw(foeUp[i]);
+				draw(foeDown[i]);
+				draw(foeLeft[i]);
+				draw(foeRight[i]);
 			}
-
 			draw(joko);
 			break;
 		}

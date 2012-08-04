@@ -36,7 +36,7 @@ public class Crop{
 	public Crop(){
 		if(this.first){
 			this.init();
-			this.health = 2;
+			this.health = 3;
 			this.first = false;
 		}
 	}
