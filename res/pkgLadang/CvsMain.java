@@ -147,7 +147,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if(!hari.stateTanam)
 				updateEn();
 		
-		if (musicManager == null){
+		if (musicManager == null && !hari.stateTanam){
 			musicManager = new MusicManager();
 			musicManager.play();
 		}

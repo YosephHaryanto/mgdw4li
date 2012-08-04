@@ -8,7 +8,7 @@ public class MusicManager {
 	Player sound;
 	MusicManager(){
 		try {
-			sound=Manager.createPlayer(getClass().getResourceAsStream("/music/loop.wav"), "audio/x-wav");
+			sound=Manager.createPlayer(getClass().getResourceAsStream("/music/r.wav"), "audio/x-wav");
 			sound.realize();
 			sound.prefetch();
 			sound.setLoopCount(-1); 
