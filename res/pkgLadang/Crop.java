@@ -57,6 +57,14 @@ public class Crop{
 		}
 	}
 	
+	public void destroy(){
+		this.health = 3;
+		this.first = false;
+		this.x = -30;
+		this.y = -30;
+		this.active = 0;
+	}
+	
 	public void plant(int state, int pos){
 		int posX = 0, posY = 0;
 		switch(pos){

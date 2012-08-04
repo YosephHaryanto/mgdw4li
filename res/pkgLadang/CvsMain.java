@@ -26,12 +26,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 	final int SCREEN_CHOOSE_ACTION = 3;
 	final int SCREEN_CHOOSE_CROP = 4;
 	
-	
-	final int ENEMY_UP = 1;
-	final int ENEMY_RIGHT = 2;
-	final int ENEMY_LEFT = 3;
-	final int ENEMY_BOTTOM = 4;
-	
 	int currMainMenu, currActionMenu, currCropMenu = 0;
 	int sleepTime;
 	int posi;
@@ -57,6 +51,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	//8 Crop in Field
 	Crop [] crop = new Crop[16];
+	
+	//Day
+	Day hari = new Day();
 	
 	protected CvsMain(MIDlet m){
 		super(false);
@@ -133,18 +130,31 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	private void update(){
 		getInput();
-		updateEn();
+		switch (screenState){
+		case (SCREEN_CHOOSE_ACTION):
+		case (SCREEN_CHOOSE_CROP): //Hapus comment kalo enemy tetep jalan pas masang taneman
+		case (SCREEN_IN_GAME):
+			if(!hari.stateTanam)
+				updateEn();
+		
+		if (musicManager == null){
+			musicManager = new MusicManager();
+			musicManager.play();
+		}
+			updateTime();
+			break;
+		}
+	}
+	
+	private void updateTime(){
+		if(hari.firstCycle)
+			hari.startTime();
+		if(hari.timeRunning && hari.isTick()){
+			hari.nextHour();
+		}
 	}
 	
 	private void updateEn(){
-		switch (screenState){
-		//case (SCREEN_CHOOSE_ACTION):
-		//case (SCREEN_CHOOSE_CROP): //Hapus comment kalo enemy tetep jalan pas masang taneman
-		case (SCREEN_IN_GAME):
-			if (musicManager == null){
-				musicManager = new MusicManager();
-				musicManager.play();
-			}
 		for (int i = 0; i < foeUp.length; i++) {
 			
 			if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
@@ -170,7 +180,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 				if(foeRight[i].isOut(crop))
 					resetEnemy(foeRight[i]);
 			}
-		}
 		}
 	}
 	
@@ -400,7 +409,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 				screenState = SCREEN_CHOOSE_CROP;
 			else{
 				screenState = SCREEN_IN_GAME;
-				destroyCrop(posi-1);
+				crop[posi-1].destroy();
 			}
 			break;
 		case 1:
@@ -462,6 +471,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 			draw(foeRight[i]);
 		}
 		draw(joko);
+		g.drawString(hari.getTime(), 208, 0, 0);
 		
 		if(secondLevel){
 			
@@ -488,15 +498,11 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void draw(Crop [] crop){
 		for(int i = 0; i < crop.length; i++){
 			if(crop[i].health <= 0)
-				destroyCrop(i);
+				crop[i].destroy();
 			
 			if(crop[i].active == 1){
 				g.drawImage(crop[i].current, crop[i].x, crop[i].y, 0);
 			}
 		}
-	}
-	
-	private void destroyCrop(int i){
-		crop[i] = new Crop();
 	}
 }
