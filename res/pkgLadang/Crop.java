@@ -12,12 +12,16 @@ public class Crop{
 	public int x, y;
 	public int active = 0;
 	public boolean first = true;
-	Image current, tomato, cabbage;	
+	Image current, tomato, cabbage, corn, carrot, potato, turnip;	
 	
 	public void init(){
 		try {
 			tomato = Image.createImage("/img/tile/tomato.png");
 			cabbage = Image.createImage("/img/tile/cabbage.png");
+			corn = Image.createImage("/img/tile/corn.png");
+			carrot = Image.createImage("/img/tile/carrot.png");
+			potato = Image.createImage("/img/tile/potato.png");
+			turnip = Image.createImage("/img/tile/turnip.png");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -30,6 +34,18 @@ public class Crop{
 		}
 		else if (cropType.equals("cabbage")){
 			this.current = cabbage;	
+		}
+		else if (cropType.equals("corn")){
+			this.current = corn;	
+		}
+		else if (cropType.equals("carrot")){
+			this.current = carrot;	
+		}
+		else if (cropType.equals("potato")){
+			this.current = potato;
+		}
+		else if (cropType.equals("turnip")){
+			this.current = turnip;	
 		}
 	}
 	
