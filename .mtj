@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mtjMetadata jad="LadangIndonesia.jad" version="1.2.1.v201009031435">
-   <device group="Sun Java(TM) Wireless Toolkit 2.5.2 for CLDC" name="DefaultColorPhone"/>
+<mtjMetadata jad="Ladang_Indonesia.jad" version="1.2.1.v201009031435">
    <signing projectSpecific="false" signProject="false">
       <alias/>
    </signing>
