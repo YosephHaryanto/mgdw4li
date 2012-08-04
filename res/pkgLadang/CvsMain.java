@@ -14,7 +14,7 @@ public class CvsMain extends GameCanvas implements Runnable {
     public final int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
     public final int MAX_FRAME_SKIPS = 5;
     int behind;
-
+    
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
 	boolean enLaunched = false;
@@ -54,6 +54,8 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	//Day
 	Day hari = new Day();
+	
+	TextureManager textureManager;
 	
 	protected CvsMain(MIDlet m){
 		super(false);
@@ -114,12 +116,20 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void init(){
 		gameOver = false;
 		screenState = SCREEN_SPLASH;
-		
+		textureManager = new TextureManager();
 		bg.initAll();
 		farm.init();
 		joko.initChar();
 		initCrop();
-
+		
+		textureManager.insertTexture("/img/sprite/enWorm.png", "Worm");
+		textureManager.insertTexture("/img/tile/tomato.png", "tomato");
+		textureManager.insertTexture("/img/tile/cabbage.png", "cabbage");
+		textureManager.insertTexture("/img/tile/corn.png", "corn");
+		textureManager.insertTexture("/img/tile/carrot.png", "carrot");
+		textureManager.insertTexture("/img/tile/potato.png", "potato");
+		textureManager.insertTexture("/img/tile/turnip.png", "turnip");
+		
 		//Enemy initialization
 		initEnemy("UP");
 		initEnemy("DOWN");
@@ -186,25 +196,25 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void initEnemy(String which){
 		if (which.equals("UP")) {
 			for (int i = 0; i < foeUp.length; i++) {
-				foeUp[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeUp[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
 				foeUp[i].initChar();
 			}
 		}
 		else if(which.equals("DOWN")){
 			for (int i = 0; i < foeDown.length; i++) {
-				foeDown[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeDown[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
 				foeDown[i].initChar();
 			}
 		}
 		else if(which.equals("LEFT")){
 			for (int i = 0; i < foeLeft.length; i++) {
-				foeLeft[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeLeft[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
 				foeLeft[i].initChar();
 			}
 		}
 		else if(which.equals("RIGHT")){
 			for (int i = 0; i < foeRight.length; i++) {
-				foeRight[i] = new Enemy("/img/sprite/enWorm.png", "Worm", (i + 1),2,which);
+				foeRight[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
 				foeRight[i].initChar();
 			}
 		}
@@ -212,7 +222,7 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	private void initCrop(){
 		for(int i = 0; i < crop.length; i++){
-			crop[i] = new Crop();
+			crop[i] = new Crop(textureManager);
 		}
 	}
 	

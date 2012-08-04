@@ -1,6 +1,6 @@
 package pkgLadang;
 
-import java.io.IOException;
+
 import javax.microedition.lcdui.game.Sprite;
 import javax.microedition.lcdui.Image;
 
@@ -21,23 +21,20 @@ public class Enemy{
 	public boolean moving = true;
 	public int currentDir = 0;
 	public String origin;
-	
-	public Enemy(String newUri, String type, int pos, int initSpeed, String origins){
-        this.uri= newUri;
+	TextureManager textureManager;
+	public Enemy(TextureManager textureManager, String type, int pos, int initSpeed, String origins){
+        this.textureManager= textureManager;
         this.position = pos;
         this.speed = initSpeed;
         this.origin = origins;
+        this.type = type;
     }
 	
 	public void initChar(){
-		try{
-			//runImg = Image.createImage("/img/sprite/spriteboy.png");
-			this.img = Image.createImage(this.uri);
-			this.spr = new Sprite(this.img, 30, 30);
-		}
-		catch(IOException e){
-			e.printStackTrace();
-		}
+		//runImg = Image.createImage("/img/sprite/spriteboy.png");
+		if ( type.equals("Worm"))
+			this.img = textureManager.getTexture(type);
+		this.spr = new Sprite(this.img, 30, 30);
 
 		this.setinitPos();
 		this.spr.setFrame(0);
