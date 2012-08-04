@@ -32,8 +32,11 @@ public class CvsMain extends GameCanvas implements Runnable {
 	final int ENEMY_LEFT = 3;
 	final int ENEMY_BOTTOM = 4;
 	
-	int currMainMenu = 0;
+	int currMainMenu, currActionMenu, currCropMenu = 0;
 	int sleepTime;
+	int posi;
+	
+	String cropChoice = "";
 	
 	
 	//Character
@@ -135,6 +138,8 @@ public class CvsMain extends GameCanvas implements Runnable {
 	
 	private void updateEn(){
 		switch (screenState){
+		//case (SCREEN_CHOOSE_ACTION):
+		//case (SCREEN_CHOOSE_CROP): //Hapus comment kalo enemy tetep jalan pas masang taneman
 		case (SCREEN_IN_GAME):
 			if (musicManager == null){
 				musicManager = new MusicManager();
@@ -258,12 +263,9 @@ public class CvsMain extends GameCanvas implements Runnable {
 			boolean idle = true;
 			if(keyState == FIRE_PRESSED){
 				if(!fireButtonHold){
-					int posi = joko.determinePos();
-					if((posi != 99) && (crop[posi-1].active == 0)){
-						crop[posi-1].setCrop("tomato");
-						crop[posi-1].plant(2,posi);
-						crop[posi-1].active = 1;
-					}
+					posi = joko.determinePos();
+					if(posi != 99)
+						screenState = SCREEN_CHOOSE_ACTION;
 					fireButtonHold = true;
 				}
 			}
@@ -309,6 +311,69 @@ public class CvsMain extends GameCanvas implements Runnable {
 			if (idle)
 				joko.move(4);
 			break;
+		case SCREEN_CHOOSE_ACTION:
+			if((keyState & FIRE_PRESSED)!= 0){
+				if(!fireButtonHold){
+					goToAction(currActionMenu);
+					currActionMenu = 0;
+					fireButtonHold = true;
+				}
+			}
+			else 
+				fireButtonHold = false;
+			
+			if(keyState == DOWN_PRESSED){
+				if(!downButtonHold){
+					currActionMenu++;
+					if(currActionMenu == 3)
+						currActionMenu = 0;
+					downButtonHold = true;
+				}
+			} else
+				downButtonHold = false;
+			
+			if(keyState == UP_PRESSED){
+				if(!upButtonHold){
+					currActionMenu--;
+					if(currActionMenu == -1)
+						currActionMenu = 2;
+					upButtonHold = true;
+				}
+			} else
+				upButtonHold = false;
+			break;
+			
+		case SCREEN_CHOOSE_CROP:
+			if((keyState & FIRE_PRESSED)!= 0){
+				if(!fireButtonHold){
+					goToCrop(currCropMenu);
+					currCropMenu = 0;
+					fireButtonHold = true;
+				}
+			}
+			else 
+				fireButtonHold = false;
+			
+			if(keyState == DOWN_PRESSED){
+				if(!downButtonHold){
+					currCropMenu++;
+					if(currCropMenu == 6)
+						currCropMenu = 0;
+					downButtonHold = true;
+				}
+			} else
+				downButtonHold = false;
+			
+			if(keyState == UP_PRESSED){
+				if(!upButtonHold){
+					currCropMenu--;
+					if(currCropMenu == -1)
+						currCropMenu = 5;
+					upButtonHold = true;
+				}
+			} else
+				upButtonHold = false;
+			break;
 		}
 	}
 	
@@ -328,6 +393,36 @@ public class CvsMain extends GameCanvas implements Runnable {
 		}
 	}
 	
+	private void goToAction(int menu){
+		switch(menu){
+		case 0:
+			if(crop[posi-1].active == 0)
+				screenState = SCREEN_CHOOSE_CROP;
+			else{
+				screenState = SCREEN_IN_GAME;
+				destroyCrop(posi-1);
+			}
+			break;
+		case 1:
+			//screenState = SCREEN_SPLASH;
+		break;
+		case 2:
+			screenState = SCREEN_IN_GAME;
+			break;
+		default:
+			screenState = SCREEN_MAIN_MENU;
+		}
+	}
+	
+	private void goToCrop(int menu){
+		crop[posi-1].setCrop(cropChoice);
+		crop[posi-1].plant(2,posi);
+		crop[posi-1].active = 1;
+		
+		screenState = SCREEN_IN_GAME;
+	}
+	
+	
 	private void draw(){
 		g.drawImage(bg.changeBackground(screenState), 0, 0, 0 );
 		
@@ -338,23 +433,40 @@ public class CvsMain extends GameCanvas implements Runnable {
 			bg.drawMainMenu(g, currMainMenu);
 			break;
 		case SCREEN_IN_GAME:
-			farm.drawMap(g);
-			
-			//0 = load 1 field
-			//1 = load 2 field
-			//2 = load 3 field
-			//3 = load 4 field
-			farm.openField(3);
-			draw(crop);
-			
-			for(int i = 0; i < foeUp.length; i++){
-				draw(foeUp[i]);
-				draw(foeDown[i]);
-				draw(foeLeft[i]);
-				draw(foeRight[i]);
-			}
-			draw(joko);
+			drawBasic(false);
 			break;
+		case SCREEN_CHOOSE_ACTION:
+			drawBasic(true);
+			break;
+		case SCREEN_CHOOSE_CROP:
+			drawBasic(true);
+			cropChoice = bg.drawCropMenu(g, currCropMenu);
+			break;
+		}
+	}
+	
+	private void drawBasic(boolean secondLevel){
+		farm.drawMap(g);
+		
+		//0 = load 1 field
+		//1 = load 2 field
+		//2 = load 3 field
+		//3 = load 4 field
+		farm.openField(3);
+		draw(crop);
+		
+		for(int i = 0; i < foeUp.length; i++){
+			draw(foeUp[i]);
+			draw(foeDown[i]);
+			draw(foeLeft[i]);
+			draw(foeRight[i]);
+		}
+		draw(joko);
+		
+		if(secondLevel){
+			
+			bg.drawActionMenu(g, currActionMenu, (crop[posi-1].active == 1)); 
+			//check whether is there already crop in it
 		}
 	}
 	
@@ -376,11 +488,15 @@ public class CvsMain extends GameCanvas implements Runnable {
 	private void draw(Crop [] crop){
 		for(int i = 0; i < crop.length; i++){
 			if(crop[i].health <= 0)
-				crop[i] = new Crop();
+				destroyCrop(i);
 			
 			if(crop[i].active == 1){
 				g.drawImage(crop[i].current, crop[i].x, crop[i].y, 0);
 			}
 		}
+	}
+	
+	private void destroyCrop(int i){
+		crop[i] = new Crop();
 	}
 }
