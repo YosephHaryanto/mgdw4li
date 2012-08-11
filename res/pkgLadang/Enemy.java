@@ -1,16 +1,15 @@
 package pkgLadang;
 
-
 import javax.microedition.lcdui.game.Sprite;
+import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
 public class Enemy{
 	
-	//private GameCanvas gc;
-	public int[] seqDown = new int[] {0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3};
-	public int[] seqLeft = new int[] {4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7};
-	public int[] seqRight = new int[] {8,8,8,8,9,9,9,9,10,10,10,10,11,11,11,11};
-	public int[] seqUp = new int[] {12,12,12,12,13,13,13,13,14,14,14,14,15,15,15,15};
+	public int[] seqDown ;
+	public int[] seqLeft ;
+	public int[] seqRight ;
+	public int[] seqUp;
 	public String uri, type;
 	public Image img;
 	public Sprite spr;
@@ -19,11 +18,14 @@ public class Enemy{
 	public int height = 300, width = 240;
 	public boolean lastUp, lastLeft, lastRight, lastDown = false;
 	public boolean moving = true;
+	public boolean alive = true;
 	public int currentDir = 0;
 	public String origin;
 	TextureManager textureManager;
+	
+	
 	public Enemy(TextureManager textureManager, String type, int pos, int initSpeed, String origins){
-        this.textureManager= textureManager;
+        this.textureManager = textureManager;
         this.position = pos;
         this.speed = initSpeed;
         this.origin = origins;
@@ -31,13 +33,33 @@ public class Enemy{
     }
 	
 	public void initChar(){
-		//runImg = Image.createImage("/img/sprite/spriteboy.png");
-		if ( type.equals("Worm"))
-			this.img = textureManager.getTexture(type);
-		this.spr = new Sprite(this.img, 30, 30);
-
+		if (type.equals("Worm")){
+			img = textureManager.getTexture(type);
+			spr = new Sprite(img, 30, 30);
+			attack = 1;
+			health = 3;
+			seqDown = new int[] {0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3};
+			seqLeft = new int[] {4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7};
+			seqRight = new int[] {8,8,8,8,9,9,9,9,10,10,10,10,11,11,11,11};
+			seqUp = new int[] {12,12,12,12,13,13,13,13,14,14,14,14,15,15,15,15};
+		}
+		
+		else if(type.equals("Rat")){
+			img = textureManager.getTexture(type);
+			spr = new Sprite(img, 32, 32);
+			attack = 2;
+			health = 5;
+			seqDown = new int[] {0,0,0,1,1,2,2,2};
+			seqLeft = new int[] {3,3,3,4,4,4,5,5,5};
+			seqRight = new int[] {6,6,6,7,7,7,8,8,8};
+			seqUp = new int[] {9,9,9,10,10,10,11,11,11};
+		}
+		
+		
 		this.setinitPos();
 		this.spr.setFrame(0);
+		this.moving = true;
+		this.alive = true;
 	}
 	
 	private void setAllFalse(){
@@ -47,65 +69,66 @@ public class Enemy{
 		lastUp = false;
 	}
 	
-	public void moveDir(String dir){
+	private void moveDir(String dir){
 		if(dir.equals("LEFT")){
-			if(!this.lastLeft){
-				this.spr.setFrameSequence(seqLeft);
-				this.setAllFalse();
-				this.lastLeft = true;
+			if(!lastLeft){
+				spr.setFrameSequence(seqLeft);
+				setAllFalse();
+				lastLeft = true;
 			}
-			this.x -= this.speed;
+			x -= speed;
 		}
 		else if(dir.equals("RIGHT")){
-			if(!this.lastRight){
-				this.spr.setFrameSequence(seqRight);
-				this.setAllFalse();
-				this.lastRight = true;
+			if(!lastRight){
+				spr.setFrameSequence(seqRight);
+				setAllFalse();
+				lastRight = true;
 			}
-			this.x += this.speed;
+			x += this.speed;
 		}
 		else if(dir.equals("UP")){
-			if(!this.lastUp){
-				this.spr.setFrameSequence(seqUp);
-				this.setAllFalse();
-				this.lastUp = true;
+			if(!lastUp){
+				spr.setFrameSequence(seqUp);
+				setAllFalse();
+				lastUp = true;
 			}
-			this.y -= this.speed;
+			y -= this.speed;
 		}
 		else if(dir.equals("DOWN")){
-			if(!this.lastDown){
-				this.spr.setFrameSequence(seqDown);
-				this.setAllFalse();
-				this.lastDown = true;
+			if(!lastDown){
+				spr.setFrameSequence(seqDown);
+				setAllFalse();
+				lastDown = true;
 			}
-			this.y += this.speed;
+			y += speed;
 		}
 	}
+
 	
 	public void setinitPos(){
 		
-		if (this.origin.equals("UP")) {
-			this.x = width / 2;
-			this.y = -1 * this.position * (this.spr.getHeight());
-			this.spr.setFrameSequence(seqDown);
+		if (origin.equals("UP")) {
+			x = width / 2;
+			y = -1 * position * (spr.getHeight());
+			spr.setFrameSequence(seqDown);
 		}
-		else if (this.origin.equals("DOWN")) {
-			this.x = width / 2 - this.spr.getWidth();
-			this.y = height + (this.position * (this.spr.getHeight()));
-			this.spr.setFrameSequence(seqUp);
+		else if (origin.equals("DOWN")) {
+			x = width / 2 - spr.getWidth();
+			y = height + (position * (spr.getHeight()));
+			spr.setFrameSequence(seqUp);
 		}
-		else if (this.origin.equals("LEFT")) {
-			this.x = -1 * this.position * (this.spr.getWidth());
-			this.y = height / 2 - this.spr.getWidth();
-			this.spr.setFrameSequence(seqLeft);
+		else if (origin.equals("LEFT")) {
+			x = -1 * position * (spr.getWidth());
+			y = height / 2 - spr.getWidth();
+			spr.setFrameSequence(seqLeft);
 		}
-		else if (this.origin.equals("RIGHT")) {
-			this.x = width + (this.position * (this.spr.getWidth()));
-			this.y = height / 2;
-			this.spr.setFrameSequence(seqUp);
+		else if (origin.equals("RIGHT")) {
+			x = width + (position * (spr.getWidth()));
+			y = height / 2;
+			spr.setFrameSequence(seqUp);
 		}
 		
-		this.currentDir = 0;
+		currentDir = 0;
 		
 	}
 	
@@ -134,7 +157,7 @@ public class Enemy{
 				break;
 			case 5:
 				this.moveDir("LEFT");
-				if(this.x < (0 - this.spr.getWidth())) this.setinitPos(); //this.moving = false (to just 1 wave)
+				if(this.x < (0 - this.spr.getWidth())) resetEnemy();//setinitPos(); //this.moving = false (to just 1 wave)
 				break;
 			}
 			
@@ -162,7 +185,7 @@ public class Enemy{
 				break;
 			case 5:
 				this.moveDir("RIGHT");
-				if(this.x > (width + this.spr.getWidth())) this.setinitPos();;
+				if(this.x > (width + this.spr.getWidth())) resetEnemy();
 				break;
 			}
 		}
@@ -190,7 +213,7 @@ public class Enemy{
 				break;
 			case 5:
 				this.moveDir("DOWN");
-				if(this.y > (height + this.spr.getHeight())) this.setinitPos();;
+				if(this.y > (height + this.spr.getHeight())) resetEnemy();
 				break;
 			}
 		}
@@ -218,14 +241,14 @@ public class Enemy{
 				break;
 			case 5:
 				this.moveDir("UP");
-				if(this.y < ( 0 - this.spr.getHeight())) this.setinitPos();;
+				if(this.y < ( 0 - this.spr.getHeight())) resetEnemy();
 				break;
 			}
 		}
 	}
 	
 	public void move(){
-		if(this.moving){
+		if(moving){
 			this.moveSequence();
 			this.spr.nextFrame();
 		}
@@ -247,8 +270,7 @@ public class Enemy{
 			for(int i = cropFrom+4; i > cropFrom; i--){
 				try{
 					if(this.spr.collidesWith(crop[i].current, crop[i].x, crop[i].y,true)){
-						System.out.println("DANG!");
-						crop[i].health--;
+						crop[i].health -= attack;
 						return true; //object is arrived in the crop
 					}
 				}
@@ -259,6 +281,25 @@ public class Enemy{
 		return true;
 	}
 	
+	private void resetEnemy(){
+		setinitPos();
+		spr.setFrame(0);
+		moving = false;
+		alive = false;
+     }
 	
+	public void update (Sprite spr, Crop [] crop){			
+			if (!spr.collidesWith(this.spr, true)) {
+				move();
+				if(isOut(crop))
+					resetEnemy();
+			}
+	}
+	
+	public void draw(Graphics g){
+		spr.setPosition(x, y);
+		spr.paint(g);
+		
+	}
 
 }

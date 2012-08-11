@@ -6,6 +6,7 @@ import javax.microedition.media.Player;
 
 public class MusicManager {
 	Player sound;
+	boolean playing = true;
 	MusicManager(){
 		try {
 			sound=Manager.createPlayer(getClass().getResourceAsStream("/music/r.wav"), "audio/x-wav");

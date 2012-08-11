@@ -2,7 +2,7 @@ package pkgLadang;
 
 public class Day{
 	
-	final int CLOCK_TICK = 6000;
+	final int CLOCK_TICK = 100;
 
 	boolean stateTanam = true;
 	long clockStart;
@@ -11,7 +11,7 @@ public class Day{
 	boolean timeRunning = true;
 	
 	int time = 70;
-	
+	int date = 1;
 	
 	public void nextHour(){
 		if(this.time%10 == 0)
@@ -57,5 +57,10 @@ public class Day{
 		timeStr = "" + (this.time/10) + ":" + (this.time%10) + "0";
 		
 		return timeStr;
+	}
+	
+	public void nextDay(){
+		date++;
+		resetTime();
 	}
 }

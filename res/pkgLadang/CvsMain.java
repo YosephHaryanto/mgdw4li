@@ -17,18 +17,17 @@ public class CvsMain extends GameCanvas implements Runnable {
     
 	boolean gameOver = false;
 	boolean leftButtonHold, rightButtonHold, upButtonHold, downButtonHold, fireButtonHold = false;
-	boolean enLaunched = false;
-	
-	int screenState;
+
 	final int SCREEN_SPLASH = 0;
 	final int SCREEN_MAIN_MENU = 1;
 	final int SCREEN_IN_GAME = 2;
 	final int SCREEN_CHOOSE_ACTION = 3;
 	final int SCREEN_CHOOSE_CROP = 4;
 	
-	int currMainMenu, currActionMenu, currCropMenu = 0;
+	int currCropMenu = 0;
 	int sleepTime;
 	int posi;
+	int farmOpened = 0;
 	
 	String cropChoice = "";
 	
@@ -36,26 +35,26 @@ public class CvsMain extends GameCanvas implements Runnable {
 	//Character
 	MainChar joko = new MainChar("/img/sprite/spriteboy2.png");
 	
-	Enemy foeUp[] = new Enemy[10];
-	Enemy foeLeft[] = new Enemy[10];
-	Enemy foeDown[] = new Enemy[10];
-	Enemy foeRight[] = new Enemy[10];
+	Enemy foeUp[];
+	Enemy foeLeft[];
+	Enemy foeDown[];
+	Enemy foeRight[];
 	
-	//Music Manager
 	MusicManager musicManager;
-	//Background
-	Background bg = new Background();
-	
-	//Farm Field
-	FarmField farm = new FarmField();
-	
-	//8 Crop in Field
-	Crop [] crop = new Crop[16];
-	
-	//Day
-	Day hari = new Day();
-	
+	Background bg;
+	FarmField farm;
+	Crop [] crop;
+	Day hari;
 	TextureManager textureManager;
+	StateManager state;
+	EnemyManager enemy;
+	
+	
+	//SCREEN
+	ScreenSplash splash;
+	ScreenMain mainMenu;
+	ScreenAction actionMenu;
+	ScreenCrop cropMenu;
 	
 	protected CvsMain(MIDlet m){
 		super(false);
@@ -89,7 +88,6 @@ public class CvsMain extends GameCanvas implements Runnable {
 			timeDiff = System.currentTimeMillis() - beginTime;
 			sleepTime = (int) (SKIP_TICKS - timeDiff);
 			
-				//Kalo total waktu update+draw dibawah 40ms, OK. 
 				if(sleepTime > 0){
 					try{
 						Thread.sleep(sleepTime);
@@ -99,61 +97,124 @@ public class CvsMain extends GameCanvas implements Runnable {
 					}
 				}
 				
-				//Kalo total waktu update+draw diatas 40ms (telat), update game tanpa
-				//draw
-				
 				while(sleepTime < 0 && framesSkipped < MAX_FRAME_SKIPS){
 					update();
 					sleepTime += SKIP_TICKS;
 					framesSkipped++;
 					behind++;
-					System.out.println("Shit, we are behind! " + behind++);
+					System.out.println("Frame Skipped " + behind++);
 				}
 			flushGraphics();
 		}
 	}
 	
 	private void init(){
-		gameOver = false;
-		screenState = SCREEN_SPLASH;
+		
+		//Character
+		joko = new MainChar("/img/sprite/spriteboy2.png");
+		
+		//Enemy
+		foeUp = new Enemy[10];
+		foeLeft = new Enemy[10];
+		foeDown= new Enemy[10];
+		foeRight = new Enemy[10];
+		enemy = new EnemyManager();
+		
+		bg = new Background();
+		farm = new FarmField();
+		crop = new Crop[16];
+		hari = new Day();
 		textureManager = new TextureManager();
+		state = new StateManager();
+		
+		//SCREEN
+		splash = new ScreenSplash(state);
+		mainMenu = new ScreenMain(state);
+		actionMenu = new ScreenAction(state);
+		cropMenu = new ScreenCrop(state);
+		
+		gameOver = false;
 		bg.initAll();
 		farm.init();
-		joko.initChar();
+		joko.init();
 		initCrop();
 		
 		textureManager.insertTexture("/img/sprite/enWorm.png", "Worm");
+		textureManager.insertTexture("/img/sprite/enRat.png", "Rat");
 		textureManager.insertTexture("/img/tile/tomato.png", "tomato");
 		textureManager.insertTexture("/img/tile/cabbage.png", "cabbage");
 		textureManager.insertTexture("/img/tile/corn.png", "corn");
 		textureManager.insertTexture("/img/tile/carrot.png", "carrot");
 		textureManager.insertTexture("/img/tile/potato.png", "potato");
 		textureManager.insertTexture("/img/tile/turnip.png", "turnip");
-		
+		textureManager.insertTexture("/img/background/bg_main2.jpg", "bgMain");
+		textureManager.insertTexture("/img/background/bg_main2.jpg", "bgSplash");
+		textureManager.insertTexture("/img/background/btnHover.png", "btnHover");
+		textureManager.insertTexture("/img/background/btnNormal.png", "btnNormal");
+		textureManager.insertTexture("/img/background/txtStory.png", "txtStory");
+		textureManager.insertTexture("/img/background/txtFree.png", "txtFree");
+		textureManager.insertTexture("/img/background/txtOptions.png", "txtOptions");
+		textureManager.insertTexture("/img/background/txtCredits.png", "txtCredits");
+		textureManager.insertTexture("/img/background/txtExit.png", "txtExit");
+		textureManager.insertTexture("/img/background/imgPopup.jpg", "imgPopup");
+		textureManager.insertTexture("/img/background/imgPopupLong.jpg", "imgPopupLong");
+				
 		//Enemy initialization
-		initEnemy("UP");
-		initEnemy("DOWN");
-		initEnemy("LEFT");
-		initEnemy("RIGHT");
-		System.out.println("Loaded");
+		initEnemy();
+		System.out.println("Init finished");
 	}
 	
 	private void update(){
 		getInput();
-		switch (screenState){
+		
+		switch (state.getState()){
 		case (SCREEN_CHOOSE_ACTION):
 		case (SCREEN_CHOOSE_CROP): //Hapus comment kalo enemy tetep jalan pas masang taneman
 		case (SCREEN_IN_GAME):
-			if(!hari.stateTanam)
-				updateEn();
-		
-		if (musicManager == null && !hari.stateTanam){
-			musicManager = new MusicManager();
-			musicManager.play();
+			if(!hari.stateTanam){
+				if(updateEn(foeUp) &
+				   updateEn(foeDown) &
+				   updateEn(foeLeft) &
+				   updateEn(foeRight)){
+					
+						if(hari.date <= 30)hari.nextDay();
+						farmOpened = (hari.date-1) / 10;
+						initEnemy();
+				}
+			}
+		if (musicManager == null){
+			if(!hari.stateTanam){
+				musicManager = new MusicManager();
+				musicManager.play();
+				musicManager.playing = true;
+			}
+		}
+		else {
+			if(hari.stateTanam && musicManager.playing){
+				musicManager.stop();
+				musicManager.playing = false;
+			}
+			else if(!hari.stateTanam && !musicManager.playing){
+				musicManager.play();
+				musicManager.playing = true;
+			}
+			
 		}
 			updateTime();
 			break;
 		}
+	}
+	
+	private boolean updateEn(Enemy [] en){
+		boolean allDead = true;
+		if(en[0] == null) 
+			return true;
+		
+		for(int i = 0; i < en.length; i++){
+			en[i].update(joko.spr, crop);
+			if(en[i].alive) allDead = false; 
+		}
+		return allDead;
 	}
 	
 	private void updateTime(){
@@ -163,60 +224,33 @@ public class CvsMain extends GameCanvas implements Runnable {
 			hari.nextHour();
 		}
 	}
-	
-	private void updateEn(){
-		for (int i = 0; i < foeUp.length; i++) {
-			
-			if (!joko.spr.collidesWith(foeUp[i].spr, true)) {
-				foeUp[i].move();
-				if(foeUp[i].isOut(crop))
-					resetEnemy(foeUp[i]);
-			}
-			
-			if(!joko.spr.collidesWith(foeDown[i].spr, true)){
-				foeDown[i].move();
-				if(foeDown[i].isOut(crop))
-					resetEnemy(foeDown[i]);
-			}
-			
-			if(!joko.spr.collidesWith(foeLeft[i].spr, true)){
-				foeLeft[i].move();
-				if(foeLeft[i].isOut(crop))
-					resetEnemy(foeLeft[i]);
-			}
-			
-			if(!joko.spr.collidesWith(foeRight[i].spr, true)){
-				foeRight[i].move();
-				if(foeRight[i].isOut(crop))
-					resetEnemy(foeRight[i]);
-			}
-		}
-	}
-	
-	private void initEnemy(String which){
-		if (which.equals("UP")) {
-			for (int i = 0; i < foeUp.length; i++) {
-				foeUp[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
-				foeUp[i].initChar();
-			}
-		}
-		else if(which.equals("DOWN")){
-			for (int i = 0; i < foeDown.length; i++) {
-				foeDown[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
-				foeDown[i].initChar();
-			}
-		}
-		else if(which.equals("LEFT")){
+
+	private void initEnemy(){
+		String [] enemyArr = enemy.getEnemyList(hari.date);
+		int pack = (hari.date-1) / 10;
+		
+		switch(pack){
+		case 3:
 			for (int i = 0; i < foeLeft.length; i++) {
-				foeLeft[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
+				foeLeft[i] = new Enemy(textureManager, enemyArr[i], (i + 1),2,"LEFT");
 				foeLeft[i].initChar();
 			}
-		}
-		else if(which.equals("RIGHT")){
+		case 2:
+			for (int i = 0; i < foeUp.length; i++) {
+				foeUp[i] = new Enemy(textureManager, enemyArr[i], (i + 1),2,"UP");
+				foeUp[i].initChar();
+			}
+		case 1:
+			for (int i = 0; i < foeDown.length; i++) {
+				foeDown[i] = new Enemy(textureManager, enemyArr[i], (i + 1),2,"DOWN");
+				foeDown[i].initChar();
+			}
+		case 0:
 			for (int i = 0; i < foeRight.length; i++) {
-				foeRight[i] = new Enemy(textureManager, "Worm", (i + 1),2,which);
+				foeRight[i] = new Enemy(textureManager, enemyArr[i], (i + 1),2,"RIGHT");
 				foeRight[i].initChar();
 			}
+			break;
 		}
 	}
 	
@@ -226,230 +260,39 @@ public class CvsMain extends GameCanvas implements Runnable {
 		}
 	}
 	
-	private void resetEnemy(Enemy en){
-			en.setinitPos();
-			en.spr.setFrame(0);
-			en.moving = false;
-	}
-	
 	private void getInput(){
 		int keyState = getKeyStates();
-		switch(screenState){
+		
+		switch(state.getState()){
 		
 		case SCREEN_SPLASH:
-			if((keyState & FIRE_PRESSED)!= 0){
-				if(!fireButtonHold){
-					screenState = SCREEN_MAIN_MENU;
-					fireButtonHold = true;
-				}
-			}
-			else 
-				fireButtonHold = false;
+			splash.getInput(keyState);
 			break;
-			
 		case SCREEN_MAIN_MENU:
-			if((keyState & FIRE_PRESSED)!= 0){
-				if(!fireButtonHold){
-					goToMenu(currMainMenu);
-					fireButtonHold = true;
-				}
-			}
-			else 
-				fireButtonHold = false;
-			
-			if(keyState == DOWN_PRESSED){
-				if(!downButtonHold){
-					currMainMenu++;
-					if(currMainMenu == 5)
-						currMainMenu = 0;
-					downButtonHold = true;
-				}
-			} else
-				downButtonHold = false;
-			
-			if(keyState == UP_PRESSED){
-				if(!upButtonHold){
-					currMainMenu--;
-					if(currMainMenu == -1)
-						currMainMenu = 4;
-					upButtonHold = true;
-				}
-			} else
-				upButtonHold = false;
+			if(mainMenu.getInput(keyState)) midlet.notifyDestroyed();
 			break;
-			
 		case SCREEN_IN_GAME:
-			boolean idle = true;
-			if(keyState == FIRE_PRESSED){
-				if(!fireButtonHold){
-					posi = joko.determinePos();
-					if(posi != 99)
-						screenState = SCREEN_CHOOSE_ACTION;
-					fireButtonHold = true;
-				}
-			}
-			else {
-				fireButtonHold = false;
-			}
-			
-			if(keyState == DOWN_PRESSED){
-				if(!downButtonHold){
-					joko.move(0);
-					idle = false;
-				}
-			} else {
-				downButtonHold = false;
-			}
-			
-			if(keyState == LEFT_PRESSED){
-				if(!leftButtonHold){
-					joko.move(1);
-					idle = false;
-				}
-			} else {
-				leftButtonHold = false;
-			}
-			
-			if(keyState == UP_PRESSED){
-				if(!upButtonHold){
-					joko.move(2);
-					idle = false;
-				}
-			} else {
-				upButtonHold = false;
-			}
-			
-			if(keyState == RIGHT_PRESSED){
-				if(!rightButtonHold){
-					joko.move(3);
-					idle = false;
-				}
-			} else {
-				rightButtonHold = false;
-			}
-			if (idle)
-				joko.move(4);
+			joko.input(keyState, state);
 			break;
 		case SCREEN_CHOOSE_ACTION:
-			if((keyState & FIRE_PRESSED)!= 0){
-				if(!fireButtonHold){
-					goToAction(currActionMenu);
-					currActionMenu = 0;
-					fireButtonHold = true;
-				}
-			}
-			else 
-				fireButtonHold = false;
-			
-			if(keyState == DOWN_PRESSED){
-				if(!downButtonHold){
-					currActionMenu++;
-					if(currActionMenu == 3)
-						currActionMenu = 0;
-					downButtonHold = true;
-				}
-			} else
-				downButtonHold = false;
-			
-			if(keyState == UP_PRESSED){
-				if(!upButtonHold){
-					currActionMenu--;
-					if(currActionMenu == -1)
-						currActionMenu = 2;
-					upButtonHold = true;
-				}
-			} else
-				upButtonHold = false;
+			posi = joko.plantPos;
+			actionMenu.getInput(keyState,crop[posi-1]);
 			break;
-			
 		case SCREEN_CHOOSE_CROP:
-			if((keyState & FIRE_PRESSED)!= 0){
-				if(!fireButtonHold){
-					goToCrop(currCropMenu);
-					currCropMenu = 0;
-					fireButtonHold = true;
-				}
-			}
-			else 
-				fireButtonHold = false;
-			
-			if(keyState == DOWN_PRESSED){
-				if(!downButtonHold){
-					currCropMenu++;
-					if(currCropMenu == 6)
-						currCropMenu = 0;
-					downButtonHold = true;
-				}
-			} else
-				downButtonHold = false;
-			
-			if(keyState == UP_PRESSED){
-				if(!upButtonHold){
-					currCropMenu--;
-					if(currCropMenu == -1)
-						currCropMenu = 5;
-					upButtonHold = true;
-				}
-			} else
-				upButtonHold = false;
+			cropMenu.getInput(keyState, crop[posi-1], posi);
 			break;
 		}
 	}
-	
-	private void goToMenu(int menu){
-		switch(menu){
-		case 0:
-			screenState = SCREEN_IN_GAME;
-		break;
-		case 1:
-			screenState = SCREEN_SPLASH;
-		break;
-		case 4:
-			midlet.notifyDestroyed();
-			break;
-		default:
-			screenState = SCREEN_MAIN_MENU;
-		}
-	}
-	
-	private void goToAction(int menu){
-		switch(menu){
-		case 0:
-			if(crop[posi-1].active == 0)
-				screenState = SCREEN_CHOOSE_CROP;
-			else{
-				screenState = SCREEN_IN_GAME;
-				crop[posi-1].destroy();
-			}
-			break;
-		case 1:
-			//screenState = SCREEN_SPLASH;
-		break;
-		case 2:
-			screenState = SCREEN_IN_GAME;
-			break;
-		default:
-			screenState = SCREEN_MAIN_MENU;
-		}
-	}
-	
-	private void goToCrop(int menu){
-		crop[posi-1].setCrop(cropChoice);
-		crop[posi-1].plant(2,posi);
-		crop[posi-1].active = 1;
-		
-		screenState = SCREEN_IN_GAME;
-	}
-	
 	
 	private void draw(){
-		g.drawImage(bg.changeBackground(screenState), 0, 0, 0 );
+		int tempState = state.getState();
+		g.drawImage(bg.changeBackground(tempState), 0, 0, 0 );
 		
-		switch(screenState){
+		switch(tempState){
 		case SCREEN_SPLASH:
 			break;
 		case SCREEN_MAIN_MENU:
-			bg.drawMainMenu(g, currMainMenu);
+			mainMenu.draw(textureManager, g);
 			break;
 		case SCREEN_IN_GAME:
 			drawBasic(false);
@@ -459,34 +302,37 @@ public class CvsMain extends GameCanvas implements Runnable {
 			break;
 		case SCREEN_CHOOSE_CROP:
 			drawBasic(true);
-			cropChoice = bg.drawCropMenu(g, currCropMenu);
+			cropMenu.draw(textureManager, g);
 			break;
 		}
 	}
 	
-	private void drawBasic(boolean secondLevel){
+	private void drawBasic(boolean secondLevel){//fix
 		farm.drawMap(g);
 		
 		//0 = load 1 field
 		//1 = load 2 field
 		//2 = load 3 field
 		//3 = load 4 field
-		farm.openField(3);
-		draw(crop);
+		farm.openField(farmOpened);
+		
+		for(int i = 0; i < crop.length; i++){
+			crop[i].draw(g);
+		}
 		
 		for(int i = 0; i < foeUp.length; i++){
-			draw(foeUp[i]);
-			draw(foeDown[i]);
-			draw(foeLeft[i]);
-			draw(foeRight[i]);
+			if(foeUp[0] != null)foeUp[i].draw(g);
+			if(foeRight[0] != null)foeRight[i].draw(g);
+			if(foeLeft[0] != null)foeLeft[i].draw(g);
+			if(foeDown[0] != null)foeDown[i].draw(g);
 		}
-		draw(joko);
-		g.drawString(hari.getTime(), 208, 0, 0);
+		
+		joko.draw(g);
+		g.drawString("Day: " + hari.date + "  |  " + hari.getTime(), 32, 0, 0);
 		
 		if(secondLevel){
-			
-			bg.drawActionMenu(g, currActionMenu, (crop[posi-1].active == 1)); 
-			//check whether is there already crop in it
+			posi = joko.plantPos;
+			actionMenu.draw(textureManager, g, (crop[posi-1].active == 1));
 		}
 	}
 	
@@ -494,25 +340,5 @@ public class CvsMain extends GameCanvas implements Runnable {
 		g.setColor(0xc3c3c3);
 		g.fillRect(0,0,getWidth(),getHeight());
 	}
-	
-	private void draw(MainChar chars){
-		chars.spr.setPosition(chars.x, chars.y);
-		chars.spr.paint(g);
-	}
-	
-	private void draw(Enemy ens){
-		ens.spr.setPosition(ens.x, ens.y);
-		ens.spr.paint(g);
-	}
-	
-	private void draw(Crop [] crop){
-		for(int i = 0; i < crop.length; i++){
-			if(crop[i].health <= 0)
-				crop[i].destroy();
-			
-			if(crop[i].active == 1){
-				g.drawImage(crop[i].current, crop[i].x, crop[i].y, 0);
-			}
-		}
-	}
+
 }

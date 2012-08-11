@@ -1,6 +1,6 @@
 package pkgLadang;
 
-import java.io.IOException;
+import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
 public class Crop{
@@ -14,6 +14,7 @@ public class Crop{
 	public boolean first = true;
 	Image current, tomato, cabbage, corn, carrot, potato, turnip;	
 	TextureManager textureManager;
+	
 	Crop(TextureManager textureManager){
 		this.textureManager = textureManager;
 	}
@@ -25,13 +26,13 @@ public class Crop{
 	
 	public Crop(){
 		if(this.first){
-			this.health = 3;
+			this.health = 4;
 			this.first = false;
 		}
 	}
 	
 	public void destroy(){
-		this.health = 3;
+		this.health = 4;
 		this.first = false;
 		this.x = -30;
 		this.y = -30;
@@ -110,9 +111,16 @@ public class Crop{
 		this.x = posX;
 		this.y = posY;
 	}
+
+	public void draw(Graphics g){
+		if(health <= 0)
+			destroy();
+		
+		if(active == 1){
+			g.drawImage(current, x, y, 0);
+		}
+	}
 }
-
-
 /* index dari farm field tempat nanem
  * 1  2    5  6
  * 3  4    7  8
